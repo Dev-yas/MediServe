@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -36,6 +37,11 @@ public class PatientService
             throw new EmailAlreadyExistsException("A patient with this email already exists") ;
         Patient savedPatient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
         return PatientMapper.toDTO(savedPatient);  // toDTO() should be defined in PatientMapper
+    }
+    public PatientResponseDTO getPatientByName(String name) {
+        Patient patient = patientRepository.findByName(name)
+                .orElseThrow(() -> new NoSuchElementException("Patient not found with name: " + name));
+        return PatientMapper.toDTO(patient);
     }
 
     public PatientResponseDTO updatePatient(UUID id,
@@ -59,6 +65,13 @@ public class PatientService
         Patient updatedPatient = patientRepository.save(patient);
         return PatientMapper.toDTO(updatedPatient);
     }
+
+    public PatientResponseDTO getPatientById(UUID id) {
+        Patient patient = patientRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Patient not found with ID: " + id));
+        return PatientMapper.toDTO(patient);
+    }
+
 
     public void deletePatient(UUID id) {
         patientRepository.deleteById(id);
