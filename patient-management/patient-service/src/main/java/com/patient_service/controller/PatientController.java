@@ -3,6 +3,7 @@ package com.patient_service.controller;
 import com.patient_service.dto.PatientRequestDTO;
 import com.patient_service.dto.PatientResponseDTO;
 import com.patient_service.dto.validators.CreatePatientValidationGroup;
+import com.patient_service.grpc.BillingServiceGrpcClient;
 import com.patient_service.service.PatientService;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
@@ -21,7 +22,6 @@ public class PatientController
 {
     @Autowired
     private final PatientService patientService ;
-
     public PatientController(PatientService patientService) {
         this.patientService = patientService;
     }
