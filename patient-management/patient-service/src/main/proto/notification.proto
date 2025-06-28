@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package notification;
+
+option java_multiple_files = true;
+option java_package = "notification";
+option java_outer_classname = "NotificationProto";
+
+service NotificationService {
+  rpc SendNotification (NotificationRequest) returns (NotificationResponse);
+}
+
+message NotificationRequest {
+  string to = 1;
+  string subject = 2;
+  string body = 3;
+}
+
+message NotificationResponse {
+  bool success = 1;
+  string message = 2;
+}

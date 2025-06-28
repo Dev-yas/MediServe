@@ -5,27 +5,31 @@ import com.patient_service.dto.PatientResponseDTO;
 import com.patient_service.exception.EmailAlreadyExistsException;
 import com.patient_service.exception.PatientNotFoundException;
 import com.patient_service.grpc.BillingServiceGrpcClient;
+import com.patient_service.grpc.NotificationGrpcClient;
 import com.patient_service.mapper.PatientMapper;
 import com.patient_service.model.Patient;
 import com.patient_service.repository.PatientRepository;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import java.util.Optional;
-
-import org.springframework.stereotype.Service;
+import java.util.UUID;
 
 @Service
 public class PatientService {
 
     private final PatientRepository patientRepository;
     private final BillingServiceGrpcClient billingServiceGrpcClient;
+    private final NotificationGrpcClient notificationGrpcClient;
 
-    public PatientService(PatientRepository patientRepository,
-                          BillingServiceGrpcClient billingServiceGrpcClient) {
+    public PatientService(
+            PatientRepository patientRepository,
+            BillingServiceGrpcClient billingServiceGrpcClient,
+            NotificationGrpcClient notificationGrpcClient) {
         this.patientRepository = patientRepository;
         this.billingServiceGrpcClient = billingServiceGrpcClient;
+        this.notificationGrpcClient = notificationGrpcClient;
     }
 
     public List<PatientResponseDTO> getPatients() {
@@ -57,11 +61,21 @@ public class PatientService {
                 PatientMapper.toModel(patientRequestDTO)
         );
 
+        // Call billing service
         billingServiceGrpcClient.createBillingAccount(
                 newPatient.getId().toString(),
                 newPatient.getName(),
                 newPatient.getEmail()
         );
+
+        // Send email notification
+        String subject = "Welcome, " + newPatient.getName() + "!";
+        String body = String.format(
+                "Hi %s,\n\nYour account has been successfully created with Patient ID: %s.\n\nThank you for registering with us!",
+                newPatient.getName(), newPatient.getId()
+        );
+
+        notificationGrpcClient.sendNotification(newPatient.getEmail(), subject, body);
 
         return PatientMapper.toDTO(newPatient);
     }
